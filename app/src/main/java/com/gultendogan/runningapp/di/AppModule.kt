@@ -2,18 +2,18 @@ package com.gultendogan.runningapp.di
 
 import android.content.Context
 import androidx.room.Room
-import com.gultendogan.runningapp.dp.RunningDatabase
+import com.gultendogan.runningapp.db.RunningDatabase
 import com.gultendogan.runningapp.other.Constants.RUNNING_DATABASE_NAME
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.internal.managers.ApplicationComponentManager
+import dagger.hilt.android.components.ActivityComponent
+import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
 @Module
-@InstallIn(SingletonComponent::class)
+@InstallIn(ApplicationComponent::class)
 object AppModule {
 
     @Singleton
@@ -28,5 +28,5 @@ object AppModule {
 
     @Singleton
     @Provides
-    fun provideRunDao(db:RunningDatabase) = db.getRunDao()
+    fun provideRunDao(db: RunningDatabase) = db.getRunDao()
 }
