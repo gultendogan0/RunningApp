@@ -30,7 +30,7 @@ class RunFragment : Fragment(R.layout.fragment_run), EasyPermissions.PermissionC
     }
 
     private fun requestPermission() {
-        if(TrackingUtility.hasLocationPermission(requireContext())){
+        if(TrackingUtility.hasLocationPermissions(requireContext())){
             return
         }
 

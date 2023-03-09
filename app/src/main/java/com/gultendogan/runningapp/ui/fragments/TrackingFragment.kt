@@ -15,6 +15,7 @@ import com.gultendogan.runningapp.other.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.gultendogan.runningapp.other.Constants.MAP_ZOOM
 import com.gultendogan.runningapp.other.Constants.POLYLINE_COLOR
 import com.gultendogan.runningapp.other.Constants.POLYLINE_WIDTH
+import com.gultendogan.runningapp.other.TrackingUtility
 import com.gultendogan.runningapp.services.Polyline
 import com.gultendogan.runningapp.services.TrackingService
 import com.gultendogan.runningapp.ui.viewmodels.MainViewModel
@@ -29,17 +30,16 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
     private var isTracking = false
     private var pathPoints = mutableListOf<Polyline>()
 
-    private var map : GoogleMap? = null
+    private var map: GoogleMap? = null
+
+    private var curTimeInMillis = 0L
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         mapView.onCreate(savedInstanceState)
-
         btnToggleRun.setOnClickListener {
             toggleRun()
         }
-
         mapView.getMapAsync {
             map = it
             addAllPolylines()
@@ -58,39 +58,46 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
             addLatestPolyline()
             moveCameraToUser()
         })
+
+        TrackingService.timeRunInMillis.observe(viewLifecycleOwner, Observer {
+            curTimeInMillis = it
+            val formattedTime = TrackingUtility.getFormattedStopWatchTime(curTimeInMillis, true)
+            tvTimer.text = formattedTime
+        })
     }
 
-    private fun toggleRun(){
-        if(isTracking){
-            sendCommendToService(ACTION_PAUSE_SERVICE)
-        }else{
-            sendCommendToService(ACTION_START_OR_RESUME_SERVICE)
+    private fun toggleRun() {
+        if(isTracking) {
+            sendCommandToService(ACTION_PAUSE_SERVICE)
+        } else {
+            sendCommandToService(ACTION_START_OR_RESUME_SERVICE)
         }
     }
 
-    private fun updateTracking(isTracking:Boolean){
+    private fun updateTracking(isTracking: Boolean) {
         this.isTracking = isTracking
-        if(!isTracking){
+        if(!isTracking) {
             btnToggleRun.text = "Start"
             btnFinishRun.visibility = View.VISIBLE
-        }else{
+        } else {
             btnToggleRun.text = "Stop"
             btnFinishRun.visibility = View.GONE
         }
     }
 
-    private fun moveCameraToUser(){
-        if (pathPoints.isNotEmpty() && pathPoints.last().isNotEmpty()){
+    private fun moveCameraToUser() {
+        if(pathPoints.isNotEmpty() && pathPoints.last().isNotEmpty()) {
             map?.animateCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                    pathPoints.last().last(), MAP_ZOOM
+                    pathPoints.last().last(),
+                    MAP_ZOOM
                 )
             )
         }
     }
 
-    private fun addAllPolylines(){
-        for (polyline in pathPoints){
+    private fun addAllPolylines() {
+        for(polyline in pathPoints) {
             val polylineOptions = PolylineOptions()
                 .color(POLYLINE_COLOR)
                 .width(POLYLINE_WIDTH)
@@ -99,8 +106,8 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
         }
     }
 
-    private fun addLatestPolyline(){
-        if (pathPoints.isNotEmpty() && pathPoints.last().size > 1){
+    private fun addLatestPolyline() {
+        if(pathPoints.isNotEmpty() && pathPoints.last().size > 1) {
             val preLastLatLng = pathPoints.last()[pathPoints.last().size - 2]
             val lastLatLng = pathPoints.last().last()
             val polylineOptions = PolylineOptions()
@@ -112,8 +119,8 @@ class TrackingFragment : Fragment(R.layout.fragment_tracking) {
         }
     }
 
-    private fun sendCommendToService(action:String) =
-        Intent(requireContext(),TrackingService::class.java).also {
+    private fun sendCommandToService(action: String) =
+        Intent(requireContext(), TrackingService::class.java).also {
             it.action = action
             requireContext().startService(it)
         }
