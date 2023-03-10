@@ -121,6 +121,8 @@ class TrackingService : LifecycleService() {
         return super.onStartCommand(intent, flags, startId)
     }
 
+
+
     private var isTimerEnabled = false
     private var lapTime = 0L
     private var timeRun = 0L
